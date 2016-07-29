@@ -9,14 +9,14 @@
 (def default-port 3000)
 
 (def serve-deps
-  '[[ring/ring-core "1.4.0"]
-    [ring/ring-devel "1.4.0"]])
+  '[[ring/ring-core "1.5.0"]
+    [ring/ring-devel "1.5.0"]])
 
 (def jetty-dep
-  '[ring/ring-jetty-adapter "1.4.0"])
+  '[ring/ring-jetty-adapter "1.5.0"])
 
 (def httpkit-dep
-  '[http-kit "2.1.19"])
+  '[http-kit "2.2.0"])
 
 (def nrepl-dep
   '[org.clojure/tools.nrepl "0.2.11"])
