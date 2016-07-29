@@ -111,6 +111,13 @@
            {:stop-server stop-server
             :human-name "HTTP Kit"})))
 
+(defn- start-immutant [handler opts]
+  (require 'immutant.web)
+  (let [stop-server ((resolve 'immutant.web/run) handler opts)]
+    (merge (meta stop-server)
+           {:stop-server stop-server
+            :human-name "Immutant Web (Undertow)"})))
+
 (defn- start-jetty [handler opts]
   (require 'ring.adapter.jetty)
   (let [server ((resolve 'ring.adapter.jetty/run-jetty) handler opts)]
@@ -119,12 +126,17 @@
      :local-port (-> server .getConnectors first .getLocalPort)
      :stop-server #(.stop server)}))
 
-(defn server [{:keys [port httpkit] :as opts}]
-  ((if httpkit start-httpkit start-jetty)
+(defn server [{:keys [port httpkit immutant] :as opts}]
+  ((cond 
+    httpkit start-httpkit 
+    immutant start-immutant
+    :else start-jetty)
    (-> (ring-handler opts)
        wrap-content-type
        wrap-not-modified)
-   {:port port :join? false}))
+   (if immutant
+    {:port port}
+    {:port port :join? false})))
 
 ;;
 ;; nREPL

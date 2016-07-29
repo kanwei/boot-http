@@ -18,6 +18,9 @@
 (def httpkit-dep
   '[http-kit "2.2.0"])
 
+(def immutant-dep
+  '[org.immutant/web "2.1.5"])
+
 (def nrepl-dep
   '[org.clojure/tools.nrepl "0.2.11"])
 
@@ -35,13 +38,16 @@
    r resource-root ROOT str  "The root prefix when serving resources from classpath"
    p port          PORT int  "The port to listen on. (Default: 3000)"
    k httpkit            bool "Use Http-kit server instead of Jetty"
+   m immutant            bool "Use Immutant web (Undertow) server instead of Jetty"
    s silent             bool "Silent-mode (don't output anything)"
    R reload             bool "Reload modified namespaces on each request."
    n nrepl         REPL edn  "nREPL server parameters e.g. \"{:port 3001, :bind \"0.0.0.0\"}\""
    N not-found     SYM  sym "a ring handler for requested resources that aren't in your directory. Useful for pushState."]
 
   (let [port        (or port default-port)
-        server-dep  (if httpkit httpkit-dep jetty-dep)
+        server-dep  (cond httpkit httpkit-dep
+                          immutant immutant-dep
+                          :else jetty-dep)
         deps        (cond-> serve-deps
                       true        (conj server-dep)
                       (seq nrepl) (conj nrepl-dep))
@@ -57,7 +63,9 @@
                        (def server
                          (http/server
                           {:dir ~dir, :port ~port, :handler '~handler,
-                           :reload '~reload, :env-dirs ~(vec (:directories pod/env)), :httpkit ~httpkit,
+                           :reload '~reload, :env-dirs ~(vec (:directories pod/env)), 
+                           :httpkit ~httpkit,
+                           :immutant ~immutant,
                            :not-found '~not-found,
                            :resource-root ~resource-root}))
                        (def nrepl-server
